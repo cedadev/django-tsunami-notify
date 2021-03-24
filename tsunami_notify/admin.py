@@ -44,6 +44,8 @@ class NotificationAdmin(admin.ModelAdmin):
         ('sent_at', DateRangeFilter),
     )
     search_fields = ('email', 'event__event_type')
+    # There could be many events, so use a raw id field to avoid looking them all up
+    raw_id_fields = ('event', )
 
     actions = ('send_notifications', )
 
