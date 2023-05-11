@@ -1,22 +1,41 @@
-from django.core.management.base import BaseCommand, CommandError
+import time
+
+import django.core.management.base
 
 from ...models import Notification
 
 
-class Command(BaseCommand):
-    """
-    Sends all the currently unsent notifications.
-    """
+class Command(django.core.management.base.BaseCommand):
+    """Sends all the currently unsent notifications."""
+
     help = "Send all notifications that have not previously been sent."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--run_forever",
+            action="store_true",
+            help="Run the sender forever in a loop instead of exiting when notificaitons are sent.",
+        )
+
     def handle(self, *args, **options):
-        # Just get all the unsent notifications and send them
-        [num_succeeded, num_failed] = Notification.objects.filter_unsent().send_all()
-        if num_succeeded or not num_failed:
-            self.stdout.write(
-                self.style.SUCCESS("{} notification(s) sent.".format(num_succeeded))
-            )
-        if num_failed:
-            raise CommandError(
-                "{} notification(s) failed to send.".format(num_failed)
-            )
+        """Get all the unsent notifications and send them."""
+        while True:
+            [
+                num_succeeded,
+                num_failed,
+            ] = Notification.objects.filter_unsent().send_all()
+
+            if num_succeeded:
+                self.stdout.write(
+                    self.style.SUCCESS(f"{num_succeeded} notification(s) sent.")
+                )
+
+            if num_failed:
+                self.stdout.write(
+                    self.style.ERROR(f"{num_failed} notification(s) failed to send.")
+                )
+
+            if not options["run_forever"]:
+                break
+
+            time.sleep(60)
