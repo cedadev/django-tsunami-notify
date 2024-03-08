@@ -4,7 +4,7 @@ from django.utils.html import format_html
 
 from django_admin_listfilter_dropdown.filters import DropdownFilter
 
-from rangefilter.filter import DateRangeFilter
+from rangefilter.filters import DateRangeFilter
 
 from .models import Notification
 
